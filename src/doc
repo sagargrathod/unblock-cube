@@ -1,0 +1,174 @@
+Create a complete React Native game module using functional components and hooks.
+
+Project requirements:
+
+1. Add a NEW screen called **GameMenuScreen**.
+2. This screen must contain two large buttons in the center of the screen:
+
+   * Button 1: **Color Sorting**
+   * Button 2: **Unblock Cube**
+3. When user presses:
+
+   * "Color Sorting" → navigate to **ColorSortingGameScreen**
+   * "Unblock Cube" → navigate to **UnblockCubeGameScreen**
+
+Use React Navigation Stack for navigation.
+
+Design requirements:
+
+* Clean modern UI
+* Center aligned buttons
+* Rounded buttons
+* Shadow effect
+* Responsive layout
+
+---
+
+UNBLOCK CUBE GAME REQUIREMENTS
+
+Create a sliding puzzle game similar to "Unblock Me".
+
+Game board:
+
+* Grid size: **6 x 6**
+* Wooden block style UI
+* One **red block** that must reach the exit on the right side.
+* Other blocks act as obstacles.
+
+Block types:
+
+1. Horizontal blocks
+
+   * Move LEFT and RIGHT only
+
+2. Vertical blocks
+
+   * Move UP and DOWN only
+
+Rules:
+
+* Blocks cannot overlap.
+* Blocks cannot rotate.
+* Blocks must snap to grid.
+* Movement allowed only if space is empty.
+
+Gameplay:
+
+* User drags a block with finger.
+* Block slides only in its allowed direction.
+* Movement should stop when collision detected.
+* When red block reaches exit → show **"LEVEL COMPLETE" message**.
+
+Game features:
+
+* Move counter
+* Reset button
+* Smooth animations
+
+Implementation details:
+
+Use the following libraries:
+
+* react-native-gesture-handler
+* react-native-reanimated
+
+Game logic:
+
+Each block should have structure like:
+
+{
+id: string,
+row: number,
+col: number,
+length: number,
+direction: "horizontal" | "vertical"
+}
+
+Create:
+
+components:
+
+* GameBoard
+* Block
+
+logic:
+
+* validateMove()
+* checkWin()
+
+Board rendering:
+
+Render a **6x6 grid** and place blocks according to coordinates.
+
+Add initial level data.
+
+---
+
+COLOR SORTING GAME SCREEN
+
+Create a simple Color Sorting puzzle.
+
+Game rules:
+
+* Tubes contain colored liquids.
+* Player taps one tube then another tube.
+* Liquid pours if:
+
+  * Same color on top
+  * Or destination tube empty
+* Each tube can hold **4 color segments**.
+
+Add:
+
+* tube component
+* liquid animation
+* win detection (all tubes same color)
+
+---
+
+GENERAL PROJECT STRUCTURE
+
+src/
+screens/
+GameMenuScreen
+ColorSortingGameScreen
+UnblockCubeGameScreen
+
+components/
+Block
+GameBoard
+Tube
+
+logic/
+moveValidator
+winChecker
+
+---
+
+Animations:
+
+Use Reanimated for smooth sliding blocks.
+
+Blocks should smoothly move when dragged.
+
+---
+
+Styling:
+
+Use StyleSheet.
+
+Game board centered on screen.
+
+Blocks should look like wooden puzzle blocks.
+
+Red block clearly highlighted.
+
+---
+
+Final requirement:
+
+**Add new screen with button color soting and unblock cube.**
+
+Both games must be accessible from that screen.
+
+Write clean, production-ready code.
