@@ -24,3 +24,36 @@ export const COLORS = {
         muted: '#9E9E9E',
     }
 };
+
+export const colors = {
+    light: {
+        LightPine: '#F5E6D3',
+        SoftOak: '#EED5B7',
+        MapleWood: '#E6C7A3',
+        LightTeak: '#DDB892',
+        SandalwoodLight: '#F2D2A9',
+        BirchWood: '#EAD7C5',
+        CreamWood: '#F8EDE3',
+        BeechWood: '#E0C3A3',
+        LightCedar: '#F3E1C8',
+        AshWood: '#EBD3B0',
+    },
+    dark: {
+        ClassicBrown: '#8B5A2B',
+        Walnut: '#7B4B2A',
+        DarkOak: '#6B3E26',
+        Mahogany: '#5C3A21',
+        EspressoWood: '#4E2F1B',
+        DeepWood: '#3E2618',
+        BurntWood: '#2E1A12',
+        Sienna: '#A0522D',
+        DarkTeak: '#704214',
+        CocoaWood: '#5A3825',
+        GoldenBrown: '#c58a3a',
+        DarkGoldenBrown: '#5a3b1a',
+    },
+    common: {
+        white: '#FFFFFF',
+        black: '#000000',
+    }
+};

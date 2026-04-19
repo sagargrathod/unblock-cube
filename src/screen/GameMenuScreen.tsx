@@ -1,32 +1,32 @@
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { COLORS } from '../constants/colors';
 
-export default function GameMenuScreen({ navigation }: any) {
+const GameMenuScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
       <View style={styles.content}>
         <Text style={styles.title}>Game Menu</Text>
-        
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={[styles.button, styles.shadow]} 
-            onPress={() => navigation.navigate('ColorSorting')}
-          >
-            <Text style={styles.buttonText}>Color Sorting</Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.button, styles.shadow]} 
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, styles.shadow]}
             onPress={() => {
               navigation.navigate('UnblockCube');
             }}
           >
             <Text style={styles.buttonText}>Unblock Cube</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, styles.shadow]}
+            onPress={() => navigation.navigate('WoodPalette')}
+          >
+            <Text style={styles.buttonText}>Wood Palette</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -80,3 +80,4 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
 });
+export default GameMenuScreen;

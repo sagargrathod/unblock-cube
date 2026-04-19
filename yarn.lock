@@ -1763,7 +1763,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@expo/vector-icons@npm:^15.0.2":
+"@expo/vector-icons@npm:^15.0.2, @expo/vector-icons@npm:^15.1.1":
   version: 15.1.1
   resolution: "@expo/vector-icons@npm:15.1.1"
   peerDependencies:
@@ -3215,12 +3215,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "colorsorting@workspace:."
   dependencies:
+    "@expo/vector-icons": ^15.1.1
     "@react-navigation/native": ^7.2.1
     "@react-navigation/stack": ^7.8.8
     "@shopify/react-native-skia": 2.4.18
     "@types/react": ^19.2.14
     babel-preset-expo: ^55.0.12
     expo: ~55.0.8
+    expo-linear-gradient: ^55.0.13
     expo-status-bar: ~55.0.4
     react: 19.2.0
     react-native: 0.83.2
@@ -3683,6 +3685,17 @@ __metadata:
     expo: "*"
     react: "*"
   checksum: d2cf788e31db35ecbd83e53466de0b1bebe99d5809b8a4310d14d103ae4ea507b0714dcfeea2edd37c4a4364d4d3fcc1ffd568be5db6cc6997de3168dc55420d
+  languageName: node
+  linkType: hard
+
+"expo-linear-gradient@npm:^55.0.13":
+  version: 55.0.13
+  resolution: "expo-linear-gradient@npm:55.0.13"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 4a77242b3d8d12ad1c3e7254c1e95dc66f8c8552bf0d0cc5f31f716933a60242c5cf269d7958a69a05824a0f185e81a71c5a0a3181328d9029fd57c1d64aef0f
   languageName: node
   linkType: hard
 
