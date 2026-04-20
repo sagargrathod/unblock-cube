@@ -48,13 +48,13 @@ export default function UnblockCubeGameScreen({ navigation }: any) {
 
     if (canMoveTo(block, newPos, blocks)) {
       const newBlocks = [...blocks];
-      
+
       // Automatic exit translation
       if (block.isRed) {
         if (block.direction === 'horizontal' && newPos.col >= GRID_SIZE - block.length) {
-           newPos.col = GRID_SIZE;
+          newPos.col = GRID_SIZE;
         } else if (block.direction === 'vertical' && newPos.row >= GRID_SIZE - block.length) {
-           newPos.row = GRID_SIZE;
+          newPos.row = GRID_SIZE;
         }
       }
 
@@ -173,9 +173,9 @@ export default function UnblockCubeGameScreen({ navigation }: any) {
 
       <View style={styles.gameContainer}>
         {blocks.length > 0 && (
-          <GameBoard 
-            blocks={blocksWithBounds} 
-            onMove={handleMove} 
+          <GameBoard
+            blocks={blocksWithBounds}
+            onMove={handleMove}
           />
         )}
       </View>

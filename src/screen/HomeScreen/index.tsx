@@ -30,7 +30,9 @@ const HomeScreen = ({ navigation }: any) => {
                 </AppGradient>
                 <View style={styles.buttonContainer}>
                     <ThemeButton title="Play" onPress={() => navigation.navigate('UnblockCube')} />
-                    <ThemeButton title="Select Menu" onPress={() => navigation.navigate('WoodPalette')} />
+                    <ThemeButton title="Select Menu" onPress={() => navigation.navigate('SelectMode')} />
+                    <ThemeButton title="WoodPalette" onPress={() => navigation.navigate('WoodPalette')} />
+
                 </View>
                 <View style={styles.cubeListContainer}>
                     <TouchableOpacity
