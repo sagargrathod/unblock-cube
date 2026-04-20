@@ -8,6 +8,7 @@ import GameMenuScreen from './src/screen/GameMenuScreen';
 import UnblockCubeGameScreen from './src/screen/UnblockCubeGameScreen';
 import WoodPaletteScreen from './src/screen/WoodPaletteScreen';
 import HomeScreen from './src/screen/HomeScreen';
+import SelectMode from './src/screen/SelectMode';
 
 const Stack = createStackNavigator();
 
@@ -26,6 +27,7 @@ const App = () => {
             <Stack.Screen name="GameMenu" component={GameMenuScreen} />
             <Stack.Screen name="UnblockCube" component={UnblockCubeGameScreen} />
             <Stack.Screen name="WoodPalette" component={WoodPaletteScreen} />
+            <Stack.Screen name="SelectMode" component={SelectMode} />
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaProvider>
