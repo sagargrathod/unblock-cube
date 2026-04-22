@@ -6,11 +6,16 @@ import { GameBoard } from '../components/GameBoard';
 import { canMoveTo, checkWin, getBounds, BlockData, solveLevel, GRID_SIZE } from '../game/unblockCubeLogic';
 import { getUnblockLevel, TOTAL_UNBLOCK_LEVELS } from '../game/unblockLevelGenerator';
 import { COLORS } from '../constants/colors';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { setCurrentLevel, incrementMoves, resetMoves, updateBestMoves } from '../redux/gameSlice';
 
 export default function UnblockCubeGameScreen({ navigation }: any) {
-  const [level, setLevel] = useState(1);
+  const dispatch = useAppDispatch();
+  const level = useAppSelector(state => state.game.currentLevel);
+  const moves = useAppSelector(state => state.game.totalMoves);
+  const preloadedLevels = useAppSelector(state => state.game.levels);
+
   const [blocks, setBlocks] = useState<BlockData[]>([]);
-  const [moves, setMoves] = useState(0);
   const [minMoves, setMinMoves] = useState(0);
   const [isSolving, setIsSolving] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -18,16 +23,21 @@ export default function UnblockCubeGameScreen({ navigation }: any) {
 
   const loadLevel = useCallback((levelNum: number) => {
     if (levelNum < 1 || levelNum > TOTAL_UNBLOCK_LEVELS) return;
-    const levelData = getUnblockLevel(levelNum);
+    
+    // Try to get level from Redux if preloaded
+    const levelData = preloadedLevels[levelNum] || getUnblockLevel(levelNum);
+    
     setBlocks(levelData.blocks);
-    setMoves(0);
     setMinMoves(levelData.minMoves);
-    setLevel(levelNum);
-  }, []);
+    dispatch(setCurrentLevel(levelNum));
+  }, [dispatch, preloadedLevels]);
 
   useEffect(() => {
-    loadLevel(1);
-  }, [loadLevel]);
+    // Load initial level if blocks not set
+    if (blocks.length === 0) {
+      loadLevel(level);
+    }
+  }, [loadLevel, level, blocks.length]);
 
 
   const blocksWithBounds = useMemo(() => {
@@ -60,10 +70,11 @@ export default function UnblockCubeGameScreen({ navigation }: any) {
 
       newBlocks[blockIndex] = { ...block, ...newPos };
       setBlocks(newBlocks);
-      setMoves(prev => prev + 1);
+      dispatch(incrementMoves());
 
       if (checkWin(newBlocks)) {
         setTimeout(() => {
+          dispatch(updateBestMoves({ level, moves: moves + 1 }));
           Alert.alert(
             'LEVEL COMPLETE',
             `Congratulations! You solved level ${level} in ${moves + 1} moves.`,

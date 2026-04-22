@@ -2,6 +2,9 @@ import { Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { startLevelGeneration } from "../../redux/levelService";
 
 import styles from "./styles";
 import { ThemeButton } from "../../components/ThemeButton";
@@ -11,6 +14,14 @@ import { colors } from "../../constants/colors";
 
 
 const HomeScreen = ({ navigation }: any) => {
+    const dispatch = useAppDispatch();
+    const { lastGeneratedLevel, isGenerating } = useAppSelector(state => state.game);
+
+    useEffect(() => {
+        if (!isGenerating && lastGeneratedLevel < 1000) {
+            startLevelGeneration(dispatch, lastGeneratedLevel);
+        }
+    }, [dispatch, lastGeneratedLevel, isGenerating]);
 
 
     return (
