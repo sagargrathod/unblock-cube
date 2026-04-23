@@ -14,7 +14,7 @@ const SelectMode = ({ navigation }: any) => {
                 <Header title="Select Mode" onBackPress={() => navigation.goBack()} />
                 <View style={styles.emptySpace} />
                 <AppGradient style={styles.modeContainer}>
-                    <TouchableOpacity style={styles.modeItem} onPress={() => navigation.navigate('UnblockCube', { difficulty: 'Easy' })}>
+                    <TouchableOpacity style={styles.modeItem} onPress={() => navigation.navigate('SelectLevel', { difficulty: 'Easy' })}>
                         <Ionicons name="play-circle-outline" size={50} color={colors.light.LightPine} />
                         <Text style={styles.medium}>Easy</Text>
                     </TouchableOpacity>

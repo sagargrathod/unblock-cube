@@ -1,0 +1,6 @@
+export const GAME_CONSTANTS = {
+    TOTAL_LEVELS: 1000,
+    INITIAL_LOAD: 50,
+    LOAD_BATCH: 50,
+    GRID_COLUMNS: 3,
+};

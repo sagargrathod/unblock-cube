@@ -7,7 +7,7 @@ import { canMoveTo, checkWin, getBounds, BlockData, solveLevel, GRID_SIZE } from
 import { getUnblockLevel, TOTAL_UNBLOCK_LEVELS } from '../game/unblockLevelGenerator';
 import { COLORS } from '../constants/colors';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { setCurrentLevel, incrementMoves, resetMoves, updateBestMoves } from '../redux/gameSlice';
+import { setCurrentLevel, incrementMoves, resetMoves, updateBestMoves, unlockLevel } from '../redux/gameSlice';
 
 export default function UnblockCubeGameScreen({ navigation }: any) {
   const dispatch = useAppDispatch();
@@ -75,6 +75,7 @@ export default function UnblockCubeGameScreen({ navigation }: any) {
       if (checkWin(newBlocks)) {
         setTimeout(() => {
           dispatch(updateBestMoves({ level, moves: moves + 1 }));
+          dispatch(unlockLevel(level + 1));
           Alert.alert(
             'LEVEL COMPLETE',
             `Congratulations! You solved level ${level} in ${moves + 1} moves.`,
