@@ -8,35 +8,61 @@ import {
 import React, { useState, useMemo, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector, useDispatch } from "react-redux";
+import { useIsFocused } from "@react-navigation/native";
 
 import styles from "./styles";
 import { Header, Level } from "../../components";
 import { GAME_CONSTANTS } from "../../constants/game";
 import { setCurrentLevel } from "../../redux/gameSlice";
 import { colors } from "../../constants/colors";
+import { useQuery } from "../../database/realmContext";
+import { Level as LevelModel } from "../../database/schema";
+
+const levelsData = require("../../assets/levels.json");
 
 const SelectLevelScreen = ({ navigation }: any) => {
   const dispatch = useDispatch();
-  const { levels, unlockedLevels, bestMoves } = useSelector(
-    (state: any) => state.game,
-  );
-  const [visibleCount, setVisibleCount] = useState(GAME_CONSTANTS.INITIAL_LOAD);
+  const unlockedLevels = useSelector((state: any) => state.game.unlockedLevels);
+  const bestMoves = useSelector((state: any) => state.game.bestMoves);
+  const isGenerating = useSelector((state: any) => state.game.isGenerating);
+  const isFocused = useIsFocused();
+
+  const realmLevels = useQuery(LevelModel).sorted("levelNumber");
+
+  const [visibleCount, setVisibleCount] = useState(GAME_CONSTANTS.TOTAL_LEVELS);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // All 1000 levels are Easy for now
-  const allLevelNumbers = useMemo(() => {
-    return Array.from({ length: GAME_CONSTANTS.TOTAL_LEVELS }, (_, i) => i + 1);
+  // Optimize lookup maps
+  const levelsDataMap = useMemo(() => {
+    const map: Record<number, any> = {};
+    if (Array.isArray(levelsData)) {
+      levelsData.forEach((l: any) => {
+        map[l.levelNumber] = l;
+      });
+    }
+    return map;
   }, []);
 
-  const displayedLevelsSnapshot = useMemo(() => {
-    return allLevelNumbers.slice(0, visibleCount);
-  }, [visibleCount, allLevelNumbers]);
+  const realmLevelsMap = useMemo(() => {
+    const map: Record<number, any> = {};
+    realmLevels.forEach((l) => {
+      map[l.levelNumber] = l;
+    });
+    return map;
+  }, [realmLevels]);
+
+  const displayedLevels = useMemo(() => {
+    return Array.from({ length: visibleCount }, (_, i) => i + 1);
+  }, [visibleCount]);
+
+  const clearedCount = useMemo(() => {
+    return Object.keys(bestMoves || {}).length;
+  }, [bestMoves]);
 
   const handleLoadMore = useCallback(() => {
     if (visibleCount >= GAME_CONSTANTS.TOTAL_LEVELS || isLoadingMore) return;
 
     setIsLoadingMore(true);
-    // Small delay to show loader and keep UI responsive
     setTimeout(() => {
       setVisibleCount((prev) =>
         Math.min(prev + GAME_CONSTANTS.LOAD_BATCH, GAME_CONSTANTS.TOTAL_LEVELS),
@@ -54,16 +80,28 @@ const SelectLevelScreen = ({ navigation }: any) => {
   );
 
   const renderLevel = useCallback(
-    ({ item }: { item: number }) => (
-      <Level
-        levelNumber={item}
-        isLocked={item > unlockedLevels}
-        levelData={levels[item]}
-        bestMoves={bestMoves[item]}
-        onPress={handleLevelPress}
-      />
-    ),
-    [levels, unlockedLevels, bestMoves, handleLevelPress],
+    ({ item }: { item: number }) => {
+      const levelData = realmLevelsMap[item] || levelsDataMap[item];
+      const best = bestMoves[item.toString()];
+
+      return (
+        <Level
+          levelNumber={item}
+          isLocked={item > Math.max(unlockedLevels, 100)}
+          isCleared={best !== undefined && best !== null}
+          levelData={levelData}
+          bestMoves={best}
+          onPress={handleLevelPress}
+        />
+      );
+    },
+    [
+      realmLevelsMap,
+      unlockedLevels,
+      bestMoves,
+      handleLevelPress,
+      levelsDataMap,
+    ],
   );
 
   const renderFooter = () => {
@@ -93,12 +131,18 @@ const SelectLevelScreen = ({ navigation }: any) => {
         titleStyle={styles.headerTitle}
         headerContainerStyle={styles.headerContainer}
         onBackPress={() => navigation.goBack()}
+        rightElement={
+          <Text style={styles.headerStatsText}>
+            {clearedCount}/{GAME_CONSTANTS.TOTAL_LEVELS}
+          </Text>
+        }
       />
 
       <FlatList
-        data={displayedLevelsSnapshot}
+        data={displayedLevels}
         renderItem={renderLevel}
         keyExtractor={(item) => item.toString()}
+        extraData={`${isFocused}_${clearedCount}_${unlockedLevels}`}
         numColumns={3}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.listContent}
@@ -108,7 +152,7 @@ const SelectLevelScreen = ({ navigation }: any) => {
         initialNumToRender={12}
         maxToRenderPerBatch={12}
         windowSize={5}
-        removeClippedSubviews={true}
+        removeClippedSubviews={false}
       />
     </SafeAreaView>
   );

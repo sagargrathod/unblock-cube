@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './src/redux/store';
+import { RealmProvider } from './src/database/realmContext';
 import GameMenuScreen from './src/screen/GameMenuScreen';
 import UnblockCubeGameScreen from './src/screen/UnblockCubeGameScreen';
 import WoodPaletteScreen from './src/screen/WoodPaletteScreen';
@@ -19,25 +20,27 @@ const App = () => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <SafeAreaProvider>
-            <NavigationContainer>
-              <Stack.Navigator
-                initialRouteName="Home"
-                screenOptions={{
-                  headerShown: false,
-                }}
-              >
-                <Stack.Screen name="Home" component={HomeScreen} />
-                <Stack.Screen name="GameMenu" component={GameMenuScreen} />
-                <Stack.Screen name="UnblockCube" component={UnblockCubeGameScreen} />
-                <Stack.Screen name="WoodPalette" component={WoodPaletteScreen} />
-                <Stack.Screen name="SelectMode" component={SelectMode} />
-                <Stack.Screen name="SelectLevel" component={SelectLevelScreen} />
-              </Stack.Navigator>
-            </NavigationContainer>
-          </SafeAreaProvider>
-        </GestureHandlerRootView>
+        <RealmProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <SafeAreaProvider>
+              <NavigationContainer>
+                <Stack.Navigator
+                  initialRouteName="Home"
+                  screenOptions={{
+                    headerShown: false,
+                  }}
+                >
+                  <Stack.Screen name="Home" component={HomeScreen} />
+                  <Stack.Screen name="GameMenu" component={GameMenuScreen} />
+                  <Stack.Screen name="UnblockCube" component={UnblockCubeGameScreen} />
+                  <Stack.Screen name="WoodPalette" component={WoodPaletteScreen} />
+                  <Stack.Screen name="SelectMode" component={SelectMode} />
+                  <Stack.Screen name="SelectLevel" component={SelectLevelScreen} />
+                </Stack.Navigator>
+              </NavigationContainer>
+            </SafeAreaProvider>
+          </GestureHandlerRootView>
+        </RealmProvider>
       </PersistGate>
     </Provider>
   );

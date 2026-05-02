@@ -89,9 +89,8 @@ const solve = (blocks: BlockData[]): { minMoves: number } | null => {
  * Tries to build one board for (levelNumber, attempt).
  * Every (levelNumber, attempt) pair uses a uniquely seeded RNG → unique layout.
  */
-const tryBuild = (levelNumber: number, attempt: number): BlockData[] | null => {
+const tryBuild = (levelNumber: number, attempt: number, extraObstacles: number): BlockData[] | null => {
   const rng = new SeededRandom(levelNumber * 999983 + attempt * 6291469 + 42);
-  const { extraObstacles } = getDifficulty(levelNumber);
 
   // Track occupancy for fast overlap prevention
   const grid: (string | null)[][] = Array.from({ length: GRID_SIZE }, () =>
@@ -205,25 +204,51 @@ const FALLBACK_LEVEL: BlockData[] = [
 export const getUnblockLevel = (
   levelNumber: number
 ): { blocks: BlockData[]; levelNumber: number; minMoves: number } => {
-  const { minMoves: minMov, maxMoves } = getDifficulty(levelNumber);
+  const { minMoves: minMov, maxMoves, extraObstacles: baseObstacles } = getDifficulty(levelNumber);
 
-  for (let attempt = 0; attempt < 80; attempt++) {
-    const blocks = tryBuild(levelNumber, attempt);
+  // Increase attempts for better reliability but keep it fast
+  for (let attempt = 0; attempt < 150; attempt++) {
+    // After 40 attempts, we relax the min moves to 1 to find ANY solvable level quickly.
+    // This prevents slow searches for extreme difficulty that might fail anyway.
+    const relaxFactor = attempt > 100 ? 50 : Math.floor(attempt / 10);
+    const currentMin = attempt > 40 ? 1 : Math.max(1, minMov - relaxFactor);
+    const currentMax = maxMoves + relaxFactor;
+    
+    // Also relax obstacle count more quickly
+    const currentObstacles = Math.max(2, baseObstacles - Math.floor(attempt / 20));
+
+    const blocks = tryBuild(levelNumber, attempt, currentObstacles);
     if (!blocks) continue;
     if (!isValidBoard(blocks)) continue;
 
     const result = solve(blocks);
     if (!result) continue;
-    if (result.minMoves < minMov || result.minMoves > maxMoves) continue;
+    
+    // Check moves with relaxed constraints
+    if (result.minMoves < currentMin || result.minMoves > currentMax) continue;
 
     return { blocks, levelNumber, minMoves: result.minMoves };
   }
 
-  // Fallback
-  const fb = solve(FALLBACK_LEVEL);
+  // Improved Fallback: Instead of a single hardcoded board, 
+  // generate a very simple but UNIQUE board if the complex one fails.
+  const fallbackRng = new SeededRandom(levelNumber + 12345);
+  const fallbackBlocks: BlockData[] = JSON.parse(JSON.stringify(FALLBACK_LEVEL));
+  
+  // Scramble the fallback blocks slightly to ensure uniqueness even in failure
+  fallbackBlocks.forEach(b => {
+    if (b.id.startsWith('ob')) {
+       // Randomly shift obstacles if they fit
+       const shift = fallbackRng.int(-1, 1);
+       if (b.direction === 'horizontal') b.col = Math.max(0, Math.min(GRID_SIZE - b.length, b.col + shift));
+       else b.row = Math.max(0, Math.min(GRID_SIZE - b.length, b.row + shift));
+    }
+  });
+
+  const fbResult = solve(fallbackBlocks);
   return {
-    blocks: JSON.parse(JSON.stringify(FALLBACK_LEVEL)),
+    blocks: fallbackBlocks,
     levelNumber,
-    minMoves: fb?.minMoves ?? 6,
+    minMoves: fbResult?.minMoves ?? 6,
   };
 };
