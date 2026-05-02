@@ -1,16 +1,16 @@
-import React from 'react';
-import { StyleSheet, Text } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { 
-  useAnimatedStyle, 
-  useSharedValue, 
+import React from "react";
+import { StyleSheet, Text } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
   withSpring,
   runOnJS,
   interpolate,
-  Extrapolation
-} from 'react-native-reanimated';
-import { BlockData, GRID_SIZE } from '../game/unblockCubeLogic';
-import { COLORS } from '../constants/colors';
+  Extrapolation,
+} from "react-native-reanimated";
+import { BlockData, GRID_SIZE } from "../game/unblockCubeLogic";
+import { COLORS } from "../constants/colors";
 
 interface BlockProps {
   block: BlockData & { bounds: { min: number; max: number } };
@@ -18,21 +18,42 @@ interface BlockProps {
   onMove: (id: string, newPos: { row: number; col: number }) => boolean;
 }
 
+const SPRING_CONFIG = {
+  damping: 25,
+  stiffness: 200,
+  mass: 0.5,
+  restDisplacementThreshold: 0.01,
+  restSpeedThreshold: 0.01,
+};
+
 export const Block: React.FC<BlockProps> = ({ block, cellSize, onMove }) => {
-  const isHorizontal = block.direction === 'horizontal';
-  
+  const isHorizontal = block.direction === "horizontal";
+
   const translateX = useSharedValue(block.col * cellSize);
   const translateY = useSharedValue(block.row * cellSize);
+  const isDragging = useSharedValue(false);
   const context = useSharedValue({ x: 0, y: 0 });
 
   // Update positions when block data changes (e.g. from props)
   React.useEffect(() => {
-    translateX.value = withSpring(block.col * cellSize, { damping: 15 });
-    translateY.value = withSpring(block.row * cellSize, { damping: 15 });
-  }, [block.col, block.row, cellSize]);
+    if (!isDragging.value) {
+      const targetX = block.col * cellSize;
+      const targetY = block.row * cellSize;
+
+      if (Math.abs(translateX.value - targetX) > 0.1) {
+        translateX.value = withSpring(targetX, SPRING_CONFIG);
+      }
+      if (Math.abs(translateY.value - targetY) > 0.1) {
+        translateY.value = withSpring(targetY, SPRING_CONFIG);
+      }
+    }
+  }, [block.col, block.row, cellSize, isDragging]);
 
   const panGesture = Gesture.Pan()
+    .activeOffsetX([-2, 2])
+    .activeOffsetY([-2, 2])
     .onStart(() => {
+      isDragging.value = true;
       context.value = { x: translateX.value, y: translateY.value };
     })
     .onUpdate((event) => {
@@ -48,35 +69,69 @@ export const Block: React.FC<BlockProps> = ({ block, cellSize, onMove }) => {
         translateY.value = Math.max(minY, Math.min(maxY, nextY));
       }
     })
-    .onEnd(() => {
-      // Snapping logic
-      const targetCol = isHorizontal ? Math.round(translateX.value / cellSize) : block.col;
-      const targetRow = isHorizontal ? block.row : Math.round(translateY.value / cellSize);
-      
-      // Try to commit move
+    .onEnd((event) => {
+      isDragging.value = false;
+
+      let targetCol = block.col;
+      let targetRow = block.row;
+
+      // Use velocity to determine intended target (flick support)
+      const velocityThreshold = 500;
+
+      if (isHorizontal) {
+        const velocityAdjustment =
+          Math.abs(event.velocityX) > velocityThreshold
+            ? Math.sign(event.velocityX)
+            : 0;
+        targetCol = Math.round(
+          translateX.value / cellSize + velocityAdjustment * 0.2,
+        );
+
+        // Red block exit snap logic
+        if (block.isRed && targetCol >= GRID_SIZE - block.length) {
+          targetCol = GRID_SIZE;
+        }
+      } else {
+        const velocityAdjustment =
+          Math.abs(event.velocityY) > velocityThreshold
+            ? Math.sign(event.velocityY)
+            : 0;
+        targetRow = Math.round(
+          translateY.value / cellSize + velocityAdjustment * 0.2,
+        );
+
+        // Red block exit snap logic
+        if (block.isRed && targetRow >= GRID_SIZE - block.length) {
+          targetRow = GRID_SIZE;
+        }
+      }
+
+      // Tell JS thread to update state
       runOnJS(onMove)(block.id, { row: targetRow, col: targetCol });
-      
-      // Reset values if the move wasn't committed (useEffect will override if it was)
-      translateX.value = withSpring(targetCol * cellSize);
-      translateY.value = withSpring(targetRow * cellSize);
+
+      // Immediate UI thread snap
+      // The actual target might be limited by bounds in handleMove, but we snap optimistically
+      translateX.value = withSpring(targetCol * cellSize, SPRING_CONFIG);
+      translateY.value = withSpring(targetRow * cellSize, SPRING_CONFIG);
     });
 
   const animatedStyle = useAnimatedStyle(() => {
     let opacity = 1;
     if (block.isRed) {
+      const exitThreshold = (GRID_SIZE - block.length) * cellSize;
       if (isHorizontal) {
         opacity = interpolate(
           translateX.value,
-          [(GRID_SIZE - block.length) * cellSize, (GRID_SIZE - 0.5) * cellSize],
+          [exitThreshold, exitThreshold + cellSize * 0.8],
           [1, 0],
-          Extrapolation.CLAMP
+          Extrapolation.CLAMP,
         );
       } else {
         opacity = interpolate(
           translateY.value,
-          [(GRID_SIZE - block.length) * cellSize, (GRID_SIZE - 0.5) * cellSize],
+          [exitThreshold, exitThreshold + cellSize * 0.8],
           [1, 0],
-          Extrapolation.CLAMP
+          Extrapolation.CLAMP,
         );
       }
     }
@@ -107,11 +162,9 @@ export const Block: React.FC<BlockProps> = ({ block, cellSize, onMove }) => {
           animatedStyle,
         ]}
       >
-          {block.isRed && (
-            <Text style={styles.arrow}>
-              {isHorizontal ? '→' : '↓'}
-            </Text>
-          )}
+        {block.isRed && (
+          <Text style={styles.arrow}>{isHorizontal ? "→" : "↓"}</Text>
+        )}
       </Animated.View>
     </GestureDetector>
   );
@@ -119,16 +172,24 @@ export const Block: React.FC<BlockProps> = ({ block, cellSize, onMove }) => {
 
 const styles = StyleSheet.create({
   block: {
-    position: 'absolute',
+    position: "absolute",
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.2)',
+    borderColor: "rgba(0,0,0,0.2)",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
   },
   arrow: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
-    fontWeight: 'bold',
-  }
+    fontWeight: "bold",
+    textShadowColor: "rgba(0,0,0,0.3)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
 });

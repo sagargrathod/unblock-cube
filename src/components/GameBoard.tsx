@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
-import { Block } from './Block';
-import { BlockData, GRID_SIZE } from '../game/unblockCubeLogic';
-import { COLORS } from '../constants/colors';
+import React, { useMemo } from "react";
+import { StyleSheet, View, Dimensions } from "react-native";
+import { Block } from "./Block";
+import { BlockData, GRID_SIZE } from "../game/unblockCubeLogic";
+import { COLORS } from "../constants/colors";
 
 interface GameBoardProps {
   blocks: (BlockData & { bounds: { min: number; max: number } })[];
@@ -10,9 +10,9 @@ interface GameBoardProps {
 }
 
 const PADDING = 2;
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const BOARD_SIZE = width * 0.9;
-const INNER_BOARD_SIZE = BOARD_SIZE - (PADDING * 2);
+const INNER_BOARD_SIZE = BOARD_SIZE - PADDING * 2;
 const CELL_SIZE = INNER_BOARD_SIZE / GRID_SIZE;
 
 export const GameBoard: React.FC<GameBoardProps> = ({ blocks, onMove }) => {
@@ -29,51 +29,56 @@ export const GameBoard: React.FC<GameBoardProps> = ({ blocks, onMove }) => {
       {/* Grid Background */}
       <View style={styles.grid}>
         {gridCells.map((_, i) => (
-          <View 
-            key={i} 
-            style={[
-              styles.cell, 
-              { width: CELL_SIZE, height: CELL_SIZE }
-            ]} 
+          <View
+            key={i}
+            style={[styles.cell, { width: CELL_SIZE, height: CELL_SIZE }]}
           />
         ))}
       </View>
 
       {/* Exits */}
-      {blocks.filter(b => b.isRed).map((redBlock) => {
-        if (redBlock.direction === 'horizontal') {
-          return (
-            <View 
-              key={`exit-${redBlock.id}`}
-              style={[
-                styles.exit, 
-                styles.exitHorizontal, 
-                { top: redBlock.row * CELL_SIZE + PADDING, left: BOARD_SIZE - PADDING - 4 }
-              ]} 
-            />
-          );
-        } else {
-          return (
-            <View 
-              key={`exit-${redBlock.id}`}
-              style={[
-                styles.exit, 
-                styles.exitVertical, 
-                { left: redBlock.col * CELL_SIZE + PADDING, top: BOARD_SIZE - PADDING - 4 }
-              ]} 
-            />
-          );
-        }
-      })}
+      {blocks
+        .filter((b) => b.isRed)
+        .map((redBlock) => {
+          if (redBlock.direction === "horizontal") {
+            return (
+              <View
+                key={`exit-${redBlock.id}`}
+                style={[
+                  styles.exit,
+                  styles.exitHorizontal,
+                  {
+                    top: redBlock.row * CELL_SIZE + PADDING,
+                    left: BOARD_SIZE - PADDING - 4,
+                  },
+                ]}
+              />
+            );
+          } else {
+            return (
+              <View
+                key={`exit-${redBlock.id}`}
+                style={[
+                  styles.exit,
+                  styles.exitVertical,
+                  {
+                    left: redBlock.col * CELL_SIZE + PADDING,
+                    top: BOARD_SIZE - PADDING - 4,
+                  },
+                ]}
+              />
+            );
+          }
+        })}
 
       {/* Blocks */}
       <View style={styles.blocksContainer}>
         {blocks.map((block) => (
-          <Block 
-            key={block.id} 
-            block={block} 
-            cellSize={CELL_SIZE} 
-            onMove={onMove} 
+          <Block
+            key={block.id}
+            block={block}
+            cellSize={CELL_SIZE}
+            onMove={onMove}
           />
         ))}
       </View>
@@ -83,37 +88,36 @@ export const GameBoard: React.FC<GameBoardProps> = ({ blocks, onMove }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#8B4513', // Wooden board color
-    padding: 2,
+    backgroundColor: "#8B4513", // Wooden board color
     borderRadius: 10,
     elevation: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.5,
     shadowRadius: 10,
-    overflow: 'visible',
+    overflow: "visible",
   },
   grid: {
-    position: 'absolute',
+    position: "absolute",
     top: PADDING,
     left: PADDING,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     opacity: 0.3,
   },
   cell: {
     borderWidth: 0.5,
-    borderColor: '#000',
+    borderColor: "white",
   },
   blocksContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 2,
     left: 2,
-    right: 2,
-    bottom: 2,
+    right: 0,
+    bottom: 0,
   },
   exit: {
-    position: 'absolute',
+    position: "absolute",
     backgroundColor: COLORS.game.red,
   },
   exitHorizontal: {
